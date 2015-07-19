@@ -1,3 +1,4 @@
+package org.AapUtils.Mouse;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import static org.lwjgl.glfw.GLFW.*;
 

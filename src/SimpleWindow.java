@@ -1,7 +1,5 @@
 
-import java.nio.DoubleBuffer;
-
-import org.lwjgl.BufferUtils;
+import org.AapUtils.Mouse.Mouse;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GLContext;
@@ -18,11 +16,7 @@ public class SimpleWindow {
 	private static long windowID;
 	private static int windowHeight = 600;
 	private static int windowWidth = 800;
-	private static DoubleBuffer mouseX = BufferUtils.createDoubleBuffer(1);
-	private static DoubleBuffer mouseY = BufferUtils.createDoubleBuffer(1);
 	private static Mouse mouse1;
-	private double mousedX;
-	private double mousedY;
 
 /**
  * Method called to start the whole process
@@ -35,8 +29,6 @@ public class SimpleWindow {
 		mainLoop();
 		terminate();
 	}
-
-
 	
 	/**
 	 * Initialize glfw window to display openGL
@@ -58,7 +50,7 @@ public class SimpleWindow {
 			throw new IllegalStateException("GLFW window creation failed");
 
 		glfwMakeContextCurrent(windowID); // Links the OpenGL context of the window to the current thread (GLFW_NO_CURRENT_CONTEXT error)
-		glfwSwapInterval(1); // Enable VSync, which effective caps the frame-rate of the application to 60 frames-per-second
+		glfwSwapInterval(1); // Enable VSync, which effective caps the frame-rate of the application to 60 frames-per-second		
 		glfwShowWindow(windowID);
 
 		// If you don't add this line, you'll get the following exception:
@@ -80,7 +72,7 @@ public class SimpleWindow {
 		glMatrixMode(GL_MODELVIEW);
 		
 		glClearColor(0,0,1,0);
-		glfwSetInputMode(windowID, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		mouse1.setGrabbed();
 	}
 
 	/**
@@ -90,9 +82,6 @@ public class SimpleWindow {
 		int x = 0;
 		int y = 0;
 		while(glfwWindowShouldClose(windowID)== GL_FALSE){
-			// Read dX and dY only once!
-			mousedX = mouse1.getdX();
-			mousedY = mouse1.getdY();
 			
 			// Clear the contents of the window (try disabling this and resizing the window – fun guaranteed)
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -100,19 +89,23 @@ public class SimpleWindow {
 			// Polls the user input. This is very important, because it prevents your application from becoming unresponsive
 			glfwPollEvents();
 			
-			if (glfwGetKey(windowID, GLFW_KEY_RIGHT) == 1) {
-				x = x+5;
-			}else if (glfwGetKey(windowID, GLFW_KEY_LEFT) == 1) {
-				x = x-5;
+			x = (glfwGetKey(windowID, GLFW_KEY_RIGHT) == 1) ? x+5 : x;
+			x = (glfwGetKey(windowID, GLFW_KEY_LEFT) == 1) ? x-5 : x;
+			
+			if (glfwGetKey(windowID, GLFW_KEY_ESCAPE)==1){
+				mouse1.setMouseFree();			
 			};
-//			System.out.println(glfwGetMouseButton(windowID, GLFW_MOUSE_BUTTON_1));	
-						
+				
 			
 			
-			x += 15*mouse1.mousescroll.getxScroll();
-			y += 15*mouse1.mousescroll.getyScroll();
+			x += mouse1.getdX();
+			y += (mouse1.getdY()+mouse1.getYScroll()*15);
 			
-//			System.out.println(mouse1.mousescroll.yScroll);
+			x = (x < 0)? 0 : x;
+			x = (x > windowWidth)? windowWidth : x;
+			y = (y < 0)? 0 : y;
+			y = (y > windowHeight)? windowHeight : y;
+
 			// Draw a Triangle
 			glColor3d(1, 1, 1);
 			glBegin(GL_QUADS);
@@ -122,10 +115,9 @@ public class SimpleWindow {
 				glVertex2d(x+100, y);
 			glEnd();			
 			
-//			System.out.println(mouse1.mousebutton.mouseButtonStates[0]+" "+mouse1.mousebutton.mouseButtonStates[1]);			
-			if (mouse1.mousebutton.mouseButtonStates[0] == 1) {
+			if (mouse1.getMouseButtonState(0)) {
 				glClearColor(0, 0, 0, 0);
-			}else if (mouse1.mousebutton.mouseButtonStates[1] == 1) {
+			}else if (mouse1.getMouseButtonState(1)) {
 				glClearColor(1, 0, 0, 0);
 			}
 			
